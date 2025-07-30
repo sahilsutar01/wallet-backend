@@ -13,9 +13,10 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log("✅ MongoDB Connected"))
   .catch(console.error);
 
+// --- MODIFICATION 1: Enforce uniqueness at the database level for a guaranteed fix. ---
 // Wallet schema
 const Wallet = mongoose.model("Wallet", new mongoose.Schema({
-  name: String,
+  name: { type: String, unique: true, required: true },
   address: String,
   privateKey: String,
   mnemonic: String,
@@ -53,6 +54,13 @@ const ERC20_ABI = [
 // Create Wallet
 app.post("/api/create", async (req, res) => {
   try {
+    // --- MODIFICATION 2: Add an application-level check for a user-friendly error response. ---
+    const existingWallet = await Wallet.findOne({ name: req.body.name });
+    if (existingWallet) {
+      // If a wallet with this name exists, return a 409 Conflict error.
+      return res.status(409).json({ error: "Wallet name already exists. Please try another name." });
+    }
+
     const wallet = ethers.Wallet.createRandom();
     const newWallet = new Wallet({
       name: req.body.name,
@@ -63,6 +71,10 @@ app.post("/api/create", async (req, res) => {
     await newWallet.save();
     res.json(newWallet);
   } catch (err) {
+    // This will now also catch the unique index error from MongoDB if the app check fails for any reason
+    if (err.code === 11000) {
+        return res.status(409).json({ error: "Wallet name already exists." });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -293,4 +305,3 @@ startListeners();
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
