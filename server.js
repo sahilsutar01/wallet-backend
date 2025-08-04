@@ -58,6 +58,7 @@ app.post("/api/create", async (req, res) => {
     console.log("Creating Wallet");
     console.log(req.body);
     const existingWallet = await Wallet.findOne({ name: req.body.name });
+    console.log(existingWallet);
     if (existingWallet) {
       // If a wallet with this name exists, return a 409 Conflict error.
       return res.status(409).json({ error: "Wallet name already exists. Please try another name." });
