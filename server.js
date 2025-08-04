@@ -59,7 +59,7 @@ app.post("/api/create", async (req, res) => {
     console.log(req.body);
     const existingWallet = await Wallet.findOne({ name: req.body.name });
     console.log(existingWallet);
-    if (existingWallet !== null) {
+    if (existingWallet ) {
       // If a wallet with this name exists, return a 409 Conflict error.
       return res.status(409).json({ error: "Wallet name already exists. Please try another name." });
     }
@@ -74,10 +74,7 @@ app.post("/api/create", async (req, res) => {
     await newWallet.save();
     res.json(newWallet);
   } catch (err) {
-    // This will now also catch the unique index error from MongoDB if the app check fails for any reason
-    if (err.code === 11000) {
-        return res.status(409).json({ error: "Wallet name already exists." });
-    }
+   
     res.status(500).json({ error: err.message });
   }
 });
