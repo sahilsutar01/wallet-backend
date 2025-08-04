@@ -55,6 +55,8 @@ const ERC20_ABI = [
 app.post("/api/create", async (req, res) => {
   try {
     // --- MODIFICATION 2: Add an application-level check for a user-friendly error response. ---
+    console.log("Creating Wallet");
+    console.log(req.body);
     const existingWallet = await Wallet.findOne({ name: req.body.name });
     if (existingWallet) {
       // If a wallet with this name exists, return a 409 Conflict error.
